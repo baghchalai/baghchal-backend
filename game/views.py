@@ -2,6 +2,7 @@ from rest_framework import mixins
 from rest_framework import viewsets
 from rest_framework.decorators import action
 from rest_framework.response import Response
+from rest_framework.permissions import IsAuthenticated, AllowAny
 from .models import Player
 from .serializers import PlayerSerializer
 
@@ -9,6 +10,12 @@ from .serializers import PlayerSerializer
 class PlayerViewSet(mixins.CreateModelMixin, mixins.RetrieveModelMixin, mixins.UpdateModelMixin,viewsets.GenericViewSet):
     queryset = Player.objects.all()
     serializer_class = PlayerSerializer
+    permission_classes = [IsAuthenticated]
+
+    def get_permissions(self):
+        if self.request.method == 'GET':
+            return [AllowAny()]
+        return [IsAuthenticated()]
 
     @action(detail=False, methods=['GET','PUT']) # players/me
     def me(self, request):
