@@ -3,8 +3,8 @@ from rest_framework import viewsets
 from rest_framework.decorators import action
 from rest_framework.response import Response
 from rest_framework.permissions import IsAuthenticated, AllowAny
-from .models import Player
-from .serializers import PlayerSerializer
+from .models import Player, GameWithBot
+from .serializers import PlayerSerializer, GameWithBotSerializer
 
 # Create your views here.
 class PlayerViewSet(mixins.CreateModelMixin, mixins.RetrieveModelMixin, mixins.UpdateModelMixin,viewsets.GenericViewSet):
@@ -28,3 +28,20 @@ class PlayerViewSet(mixins.CreateModelMixin, mixins.RetrieveModelMixin, mixins.U
             serializer.is_valid(raise_exception=True)
             serializer.save()
             return Response(serializer.data)
+
+class GameWithBotViewSet(mixins.CreateModelMixin,viewsets.GenericViewSet):
+    queryset = GameWithBot.objects.all()
+    serializer_class = GameWithBotSerializer
+    permission_classes = [IsAuthenticated]
+
+    def perform_create(self, serializer):
+        player = Player.objects.get(user_id=self.request.user.id)
+        print(player)
+        player.rating = player.rating + 10 # TODO
+        player.save()
+        return super().perform_create(serializer)
+
+    def get_permissions(self):
+        if self.request.method == 'GET':
+            return [AllowAny()]
+        return [IsAuthenticated()]
