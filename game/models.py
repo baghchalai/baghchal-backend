@@ -45,3 +45,22 @@ class GameWithBot(models.Model):
         if goat == '1/2' and bagh == '1/2':
             return True
         return False
+    
+class Multiplayer(models.Model):
+    player1 = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE)
+    player2 = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE)
+    pgn = models.CharField(default='',max_length=500)
+    player1_played_as = models.CharField(max_length=6, choices=GAME_CHOICES)
+    
+    def won(self):
+        [goat,bagh] = self.pgn.split('#')[1].split('-')
+        if goat != '1/2' and bagh != '1/2':
+            if self.player1_played_as == 'bagh' and int(bagh) == 1:
+                return self.player1
+            if self.player1_played_as == 'bagh' and int(bagh) == 0:
+                return self.player2
+            if self.player1_played_as == 'goat' and int(goat) == 1:
+                return self.player1
+            if self.player1_played_as == 'goat' and int(goat) == 0:
+                return self.player2
+        return 'Draw'
