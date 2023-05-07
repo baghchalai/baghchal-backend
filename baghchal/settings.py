@@ -32,6 +32,7 @@ ALLOWED_HOSTS = []
 # Application definition
 
 INSTALLED_APPS = [
+    'daphne',
     'django.contrib.admin',
     'django.contrib.auth',
     'django.contrib.contenttypes',
@@ -56,6 +57,13 @@ MIDDLEWARE = [
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
 ]
+
+ASGI_APPLICATION = "baghchal.asgi.application"
+CHANNEL_LAYERS = {
+    "default":{
+        "BACKEND" : "channels.layers.InMemoryChannelLayer"
+    }
+}
 
 CORS_ALLOW_ALL_ORIGINS = True
 

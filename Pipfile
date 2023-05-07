@@ -9,6 +9,7 @@ djoser = "*"
 djangorestframework = "*"
 djangorestframework-simplejwt = "*"
 django-cors-headers = "*"
+channels = {extras = ["daphne"], version = "*"}
 
 [dev-packages]
 
