@@ -45,13 +45,22 @@ class GameWithBot(models.Model):
         if goat == '1/2' and bagh == '1/2':
             return True
         return False
-    
+
+
 class Multiplayer(models.Model):
-    player1 = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE)
-    player2 = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE)
+    player1 = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE, related_name='player1_game')
+    player2 = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE, related_name='player2_game')
     pgn = models.CharField(default='',max_length=500)
     player1_played_as = models.CharField(max_length=6, choices=GAME_CHOICES)
-    
+    # timestamp = models.DateTimeField(auto_now_add=True)
+
+    def player2_played_as(self):
+        if self.player1_played_as == 'bagh':
+            return 'GOAT'
+        elif self.player1_played_as == 'goat':
+            return 'BAGH'
+            
+
     def won(self):
         [goat,bagh] = self.pgn.split('#')[1].split('-')
         if goat != '1/2' and bagh != '1/2':
@@ -64,3 +73,19 @@ class Multiplayer(models.Model):
             if self.player1_played_as == 'goat' and int(goat) == 0:
                 return self.player2
         return 'Draw'
+
+
+class Room(models.Model):
+    creator = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE)
+    name = models.CharField(default='',max_length=500, unique= True)
+    # active = models.BooleanField(default=True)
+    game = models.OneToOneField(Multiplayer, default=None, null=True, blank=True, on_delete=models.CASCADE)
+
+    def active(self):
+        if self.game == None:
+            return True
+        
+        return False
+
+    def __str__(self) -> str:
+        return self.name 
