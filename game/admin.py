@@ -1,5 +1,5 @@
 from django.contrib import admin
-from .models import Player, GameWithBot, Multiplayer, Room
+from .models import Player, GameWithBot, Multiplayer, Room, Mapper
 
 # Register your models here.
 @admin.register(Player)
@@ -18,3 +18,7 @@ class MultiplayerAdmin(admin.ModelAdmin):
 @admin.register(Room)
 class RoomAdmin(admin.ModelAdmin):
     list_display = ['name', 'creator', 'active','game']
+
+@admin.register(Mapper)
+class MapperAdmin(admin.ModelAdmin):
+    list_display = ['player1','player2','room']

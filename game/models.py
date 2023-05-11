@@ -46,6 +46,10 @@ class GameWithBot(models.Model):
             return True
         return False
 
+class Mapper(models.Model):
+    player1 = models.ForeignKey(settings.AUTH_USER_MODEL,default=None, null=True, blank=True, on_delete=models.CASCADE, related_name='player1_mapper')
+    player2 = models.ForeignKey(settings.AUTH_USER_MODEL,default=None, null=True, blank=True, on_delete=models.CASCADE, related_name='player2_mappers')
+    room = models.CharField(default='',max_length=500, unique= True)
 
 class Multiplayer(models.Model):
     player1 = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE, related_name='player1_game')

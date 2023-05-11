@@ -1,6 +1,9 @@
 import json
 from channels.generic.websocket import AsyncWebsocketConsumer
+from asgiref.sync import sync_to_async
 from urllib.parse import parse_qs
+from .models import Mapper
+from core.models import User
 
 class GameRoomConsumer(AsyncWebsocketConsumer):
     def __init__(self, *args, **kwargs):
@@ -35,7 +38,29 @@ class GameRoomConsumer(AsyncWebsocketConsumer):
 
         # Check if there are two players in the room
         count = self.channel_layer.groups.get(self.room_group_name, {}).items()
-        if len(count) > 3:
+        # first_user_channel = list(self.channel_layer.groups[self.room_group_name])[0]
+        # print(111, first_user_channel)
+        # first_user = await self.channel_layer.receive(first_user_channel)
+        # print(222,first_user)
+        # if(self.username != 'undefined'):
+        #     print(555555, self.username)
+        if len(count) < 3 and self.username != 'undefined':
+            def runIt():
+                (mapper,created) = Mapper.objects.get_or_create(room=self.room_name)
+                user = User.objects.get(username= self.username)
+                mapper.player1 = user
+                mapper.save()
+            await sync_to_async(runIt)()
+
+        if len(count) > 3 and self.username != 'undefined':
+            # await self.send(text_data=json.dumps(message))
+            def runIt():
+                (mapper,created) = Mapper.objects.get_or_create(room=self.room_name)
+                print(self.username)
+                user = User.objects.get(username=self.username)
+                mapper.player2 = user
+                mapper.save()
+            await sync_to_async(runIt)()
             # await self.send(text_data=json.dumps(message))
             self.playing_as = 'B'
             await self.channel_layer.group_send(
