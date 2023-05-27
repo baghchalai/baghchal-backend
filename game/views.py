@@ -2,6 +2,7 @@ from rest_framework import mixins
 from rest_framework import viewsets
 from rest_framework.decorators import action
 from rest_framework.response import Response
+from rest_framework import generics
 from rest_framework.permissions import IsAuthenticated, AllowAny
 from .models import Player, GameWithBot, Mapper
 from .serializers import PlayerSerializer, GameWithBotSerializer, MapperSerializer
@@ -18,17 +19,26 @@ class PlayerViewSet(mixins.CreateModelMixin, mixins.RetrieveModelMixin, mixins.U
             return [AllowAny()]
         return [IsAuthenticated()]
 
-    @action(detail=False, methods=['GET','PUT']) # players/me
+    @action(detail=False, methods=['GET','POST']) # players/me
     def me(self, request):
         (player,created) = Player.objects.get_or_create(user_id=request.user.id)
         if request.method == 'GET':
             serializer = PlayerSerializer(player)
+            return Response(serializer.data)
+        elif request.method == 'POST':
+            serializer = PlayerSerializer(player, data=request.data)
+            serializer.is_valid(raise_exception=True)
+            serializer.save()
             return Response(serializer.data)
         elif request.method == 'PUT':
             serializer = PlayerSerializer(player, data=request.data)
             serializer.is_valid(raise_exception=True)
             serializer.save()
             return Response(serializer.data)
+
+class LeaderboardView(generics.ListAPIView):
+    queryset = Player.objects.select_related('user').order_by('-rating')
+    serializer_class = PlayerSerializer
 
 class GameWithBotViewSet(mixins.CreateModelMixin,viewsets.GenericViewSet):
     queryset = GameWithBot.objects.all()

@@ -12,11 +12,17 @@ class GameRoomConsumer(AsyncWebsocketConsumer):
 
     async def connect(self): 
         self.room_name = self.scope['url_route']['kwargs']['room_name']
+        
         query_params = parse_qs(self.scope['query_string'].decode())
         self.username = query_params.get('username', [None])[0]
+        
+        
         print(query_params.get('username', [None])[0])
         self.room_group_name = 'chat_%s' % self.room_name
 
+        if self.room_name == 'undefined' or self.username=='undefined':
+            return
+        
         await self.channel_layer.group_add(
             self.room_group_name, self.channel_name
         )
@@ -44,15 +50,18 @@ class GameRoomConsumer(AsyncWebsocketConsumer):
         # print(222,first_user)
         # if(self.username != 'undefined'):
         #     print(555555, self.username)
-        if len(count) < 3 and self.username != 'undefined':
+        if len(count) == 1 and self.username != 'undefined' and self.room_name != 'undefined':
             def runIt():
                 (mapper,created) = Mapper.objects.get_or_create(room=self.room_name)
-                user = User.objects.get(username= self.username)
-                mapper.player1 = user
-                mapper.save()
+                if created:
+                    user = User.objects.get(username= self.username)
+                    mapper.player1 = user
+                    print("*********************888 Mapper Run")
+                    print(self.room_group_name)
+                    mapper.save()
             await sync_to_async(runIt)()
 
-        if len(count) > 3 and self.username != 'undefined':
+        if len(count) == 2 and self.username != 'undefined' and self.room_name != 'undefined':
             # await self.send(text_data=json.dumps(message))
             def runIt():
                 (mapper,created) = Mapper.objects.get_or_create(room=self.room_name)
@@ -70,6 +79,7 @@ class GameRoomConsumer(AsyncWebsocketConsumer):
                     'onboarding_state_value': False,
                 }
             )
+            print('Onboarding hatena')
 
     
 
@@ -96,6 +106,7 @@ class GameRoomConsumer(AsyncWebsocketConsumer):
         }))
 
     async def disconnect(self, close_code):
+
         await self.channel_layer.group_discard(self.room_group_name,self.channel_name)
     
     async def receive(self, text_data):

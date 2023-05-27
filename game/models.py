@@ -5,6 +5,7 @@ from django.db import models
 class Player(models.Model):
     user = models.OneToOneField(settings.AUTH_USER_MODEL, on_delete=models.CASCADE)
     rating = models.IntegerField(default=500)
+    image = models.CharField(default='', max_length=500)
     game_played = models.IntegerField(default=0)
     game_won = models.IntegerField(default=0)
     game_drawn = models.IntegerField(default=0)
