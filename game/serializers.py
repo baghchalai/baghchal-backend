@@ -1,5 +1,5 @@
 from rest_framework import serializers
-from .models import Player, GameWithBot, Mapper
+from .models import Player, GameWithBot, Mapper, Room, Multiplayer
 from core.serializers import UserSerializer
 
 class PlayerSerializer(serializers.ModelSerializer):
@@ -29,3 +29,14 @@ class MapperSerializer(serializers.ModelSerializer):
     class Meta:
         model = Mapper
         fields = ['id', 'player1', 'player2', 'room']
+
+class RoomSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Room
+        fields = ['id', 'name','creator', 'active', 'game']
+
+class MultiplayerSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Multiplayer
+        fields = ['id', 'player1','player2', 'pgn', 'player1_played_as']
+

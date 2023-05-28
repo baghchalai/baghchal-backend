@@ -4,8 +4,8 @@ from rest_framework.decorators import action
 from rest_framework.response import Response
 from rest_framework import generics
 from rest_framework.permissions import IsAuthenticated, AllowAny
-from .models import Player, GameWithBot, Mapper
-from .serializers import PlayerSerializer, GameWithBotSerializer, MapperSerializer
+from .models import Player, GameWithBot, Mapper, Room, Multiplayer
+from .serializers import PlayerSerializer, GameWithBotSerializer, MapperSerializer, RoomSerializer, MultiplayerSerializer
 
 # Create your views here.
 class PlayerViewSet(mixins.CreateModelMixin, mixins.RetrieveModelMixin, mixins.UpdateModelMixin,viewsets.GenericViewSet):
@@ -47,8 +47,18 @@ class GameWithBotViewSet(mixins.CreateModelMixin,viewsets.GenericViewSet):
 
     def perform_create(self, serializer):
         player = Player.objects.get(user_id=self.request.user.id)
-        print(player)
-        player.rating = player.rating + 10 # TODO
+        def update_rating():
+            [goat,bagh] = serializer.validated_data['pgn'].split('#')[1].split('-')
+            if goat != '1/2' and bagh != '1/2':
+                if serializer.validated_data['played_as'] == 'bagh' and int(bagh) == 1:
+                    return player.rating + 10
+                if serializer.validated_data['played_as'] == 'goat' and int(goat) == 1:
+                    return player.rating + 10
+            return player.rating - 10
+        
+        # player.rating = player.rating + 10 # TODO
+        player.rating = update_rating()
+        player.game_played = player.game_played + 1
         player.save()
         return super().perform_create(serializer)
 
@@ -61,4 +71,15 @@ class MapperViewSet(mixins.RetrieveModelMixin, viewsets.GenericViewSet):
     queryset = Mapper.objects.all()
     serializer_class = MapperSerializer
     lookup_field = 'room'
+    permission_classes = [IsAuthenticated]
+
+class RoomViewSet(mixins.CreateModelMixin, mixins.RetrieveModelMixin, mixins.UpdateModelMixin, viewsets.GenericViewSet):
+    queryset = Room.objects.all()
+    serializer_class = RoomSerializer
+    lookup_field = 'name'
+    permission_classes = [IsAuthenticated]
+
+class MultiplayerViewSet(mixins.CreateModelMixin, mixins.RetrieveModelMixin, viewsets.GenericViewSet):
+    queryset = Multiplayer.objects.all()
+    serializer_class = MultiplayerSerializer
     permission_classes = [IsAuthenticated]
