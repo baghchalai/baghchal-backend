@@ -113,17 +113,39 @@ class GameRoomConsumer(AsyncWebsocketConsumer):
         text_data_json = json.loads(text_data)
         message = text_data_json['message']
         username = text_data_json['username']
-        
-        await self.channel_layer.group_send(
-            self.room_group_name,
-            {
-                'type': 'gameroom_message',
-                'message': message,
-                'username': username,
-            }
-        )
+
+        if text_data_json['type'] == 'message':
+            await self.channel_layer.group_send(
+                self.room_group_name,
+                {
+                    'type': 'gameroom_message',
+                    'message': message,
+                    'username': username,
+                }
+            )
+
+        if text_data_json['type'] == 'chatmessage':
+            await self.channel_layer.group_send(
+                self.room_group_name,
+                {
+                    'type': 'chatroom_message',
+                    'message': message,
+                    'username': username,
+                }
+            )
 
     async def gameroom_message(self, event):
+        typ = event['type']
+        message = event['message']
+        username = event['username']
+
+        await self.send(text_data=json.dumps({
+            'type': typ,
+            'message': message,
+            'username': username,
+        }))
+
+    async def chatroom_message(self, event):
         typ = event['type']
         message = event['message']
         username = event['username']
